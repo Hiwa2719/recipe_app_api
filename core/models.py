@@ -29,9 +29,9 @@ class UserManager(BaseManager):
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True, verbose_name='email address')
     name = models.CharField(max_length=256, blank=True)
-    is_active = models.BooleanField(default=True)
-    is_staff = models.BooleanField(default=False)
-    dated_joined = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True, verbose_name='active')
+    is_staff = models.BooleanField(default=False, verbose_name='staff status')
+    date_joined = models.DateTimeField(auto_now_add=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
