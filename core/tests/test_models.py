@@ -10,12 +10,9 @@ class ModelTests(TestCase):
     def test_user_creation_with_email(self):
         user = User.objects.create_user(email='hiwa@gmail.com', password="HiWa0426513")
 
-        self.assertEqual(user.id, 1)
-        user = User.objects.get(id=1)
+        user = User.objects.get(email='hiwa@gmail.com')
         self.assertEqual(user.email, 'hiwa@gmail.com')
         self.assertTrue(user.check_password('HiWa0426513'))
-
-        self.assertEqual(user.email, 'Hiwa@GMAIL.COM')
 
     def test_new_user_without_email_password(self):
         with self.assertRaises(ValueError):
