@@ -18,7 +18,11 @@ class UserSerializer(serializers.ModelSerializer):
         }
 
     def run_validation(self, data):
-        self.user = User(email=data['email'], name=data['name'])
+        if 'email' in data:
+            email = data['email']
+            self.user = User(email=data['email'], name=data['name'])
+        else:
+            self.user = self.context.get('request').user
         return super().run_validation(data)
 
     def validate_password(self, value):
@@ -27,6 +31,12 @@ class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
+
+    def update(self, instance, validated_data):
+        password = validated_data.pop('password', None)
+        if password:
+            instance.set_password(password)
+        return super().update(instance, validated_data)
 
 
 class AuthTokenSerializer(serializers.Serializer):

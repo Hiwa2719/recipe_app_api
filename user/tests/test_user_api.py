@@ -2,15 +2,17 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
-
+from django.test import TestCase
 User = get_user_model()
+
+create_url = reverse('user:create')
+token_url = reverse('user:token')
+me_url = reverse('user:me')
 
 
 class AnonymousUserApiTests(APITestCase):
 
-    def setUp(self) -> None:
-        self.create_url = reverse('user:user-list')
-        self.token_url = reverse('user:token')
+    # def setUp(self) -> None:
 
     def test_create_user(self):
         """test creating user with valid data"""
@@ -19,7 +21,7 @@ class AnonymousUserApiTests(APITestCase):
             'password': 'hiwa_asdf',
             'name': 'what ever'
         }
-        response = self.client.post(self.create_url, data)
+        response = self.client.post(create_url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIn('hiwa@gmail.com', str(response.content, encoding='utf-8'))
         user = User.objects.get(**response.data)
@@ -32,7 +34,7 @@ class AnonymousUserApiTests(APITestCase):
             'password': 'asdf'
         }
         user = User.objects.create_user(**data).set_password
-        response = self.client.post(self.create_url, data)
+        response = self.client.post(create_url, data)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -41,7 +43,7 @@ class AnonymousUserApiTests(APITestCase):
             'email': 'hiwa@gmail.com',
             'password': 'as'
         }
-        response = self.client.post(self.create_url, data)
+        response = self.client.post(create_url, data)
         self.assertEqual(response.status_code, 400)
         user_exists = User.objects.filter(email=data['email']).exists()
         self.assertFalse(user_exists)
@@ -53,7 +55,7 @@ class AnonymousUserApiTests(APITestCase):
             'password': 'hiwa_asdf'
         }
         user = User.objects.create_user(**data)
-        response = self.client.post(self.token_url, data)
+        response = self.client.post(token_url, data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('token', response.data)
@@ -65,7 +67,7 @@ class AnonymousUserApiTests(APITestCase):
             'email': 'hiwa@gmail.com',
             'password': 'testing 101'
         }
-        response = self.client.post(self.token_url, data)
+        response = self.client.post(token_url, data)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertNotIn('token', response.data)
@@ -77,15 +79,58 @@ class AnonymousUserApiTests(APITestCase):
             'password': 'hiwa_asdf'
         }
 
-        response = self.client.post(self.token_url, data)
+        response = self.client.post(token_url, data)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertNotIn('token', response.data)
 
     def test_create_token_without_fields(self):
         """test creating token without providing email and pass"""
-        response = self.client.post(self.token_url)
+        response = self.client.post(token_url)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertNotIn('token', response.data)
 
+    def test_accessing_me_url(self):
+        """as an Anonymous user we shouldn't be allowed to access this endpoint"""
+        response = self.client.get(me_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class PrivateApiTest(APITestCase):
+    """test api requests that require authentication"""
+    def setUp(self) -> None:
+        self.user = User.objects.create_user(
+            email='asdf@gmail.com',
+            password='hiwa_asdf',
+            name='smile as we go ahead'
+        )
+        self.client.force_authenticate(self.user)
+
+    def test_retrieving_profile_for_logged_in_user(self):
+        """testing retrieving profile for logged in user"""
+        response = self.client.get(me_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, {
+            'name': self.user.name,
+            'email': self.user.email
+        })
+
+    def test_post_not_allowed(self):
+        """testing that post to me_url is not allowed"""
+        response = self.client.post(me_url)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_update_uer_profile(self):
+        """testing if update user profile works"""
+
+        data = {
+            'name': 'Angry as hell',
+            'password': 'hi there john'
+        }
+        response = self.client.patch(me_url, data)
+        print(response.content)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.name, data['name'])
+        self.assertTrue(self.user.check_password(data['password']))
