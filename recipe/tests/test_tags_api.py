@@ -34,3 +34,20 @@ class TestTagApiAuthenticatedUser(APITestCase):
         serializer = TagSerializer(tags, many=True)
         self.assertEqual(response.data, serializer.data)
         self.assertEqual(response.data[0]['creator'], self.user.id)
+
+    def test_creating_new_tag(self):
+        """tag creation test"""
+        response = self.client.post(tag_url, {'name': 'kalana'})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data.get('creator'), self.user.id)
+        self.assertEqual(response.data.get('name'), 'kalana')
+
+        tag_exists = Tag.objects.filter(name='kalana', creator=self.user).exists()
+        self.assertTrue(tag_exists)
+
+    def test_creating_tag_without_name(self):
+        """passing blank name to tag creation"""
+        response = self.client.post(tag_url, {'name': ''})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        tag_exits = Tag.objects.filter(name='', creator=self.user)
+        self.assertFalse(tag_exits)
