@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
 
-from .models import User
+from .models import User, Tag
 
 
 @admin.register(User)
@@ -29,3 +29,7 @@ class UserModelAdmin(BaseUserAdmin):
     )
     filter_horizontal = 'user_permissions', 'groups'
 
+
+@admin.register(Tag)
+class TagModelAdmin(admin.ModelAdmin):
+    pass

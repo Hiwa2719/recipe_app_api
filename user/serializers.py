@@ -20,7 +20,9 @@ class UserSerializer(serializers.ModelSerializer):
     def run_validation(self, data):
         if 'email' in data:
             email = data['email']
-            self.user = User(email=data['email'], name=data['name'])
+            password = data.get('password')
+            name = data.get('name')
+            self.user = User(email=email, password=password, name=name)
         else:
             self.user = self.context.get('request').user
         return super().run_validation(data)
@@ -51,7 +53,7 @@ class AuthTokenSerializer(serializers.Serializer):
 
         user = authenticate(request=self.context.get('request'), email=email, password=password)
         if not user:
-            msg = _('Unable to authenticate with provided credintials')
+            msg = _('Unable to authenticate with provided credentials')
             raise serializers.ValidationError(msg, code='authentication')
 
         attrs['user'] = user

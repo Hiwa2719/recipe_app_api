@@ -111,10 +111,7 @@ class PrivateApiTest(APITestCase):
         """testing retrieving profile for logged in user"""
         response = self.client.get(me_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, {
-            'name': self.user.name,
-            'email': self.user.email
-        })
+        self.assertEqual(response.data.get('email'), self.user.email)
 
     def test_post_not_allowed(self):
         """testing that post to me_url is not allowed"""
@@ -129,7 +126,6 @@ class PrivateApiTest(APITestCase):
             'password': 'hi there john'
         }
         response = self.client.patch(me_url, data)
-        print(response.content)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.user.refresh_from_db()
         self.assertEqual(self.user.name, data['name'])
