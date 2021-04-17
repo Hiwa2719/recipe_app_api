@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.db.utils import IntegrityError
 
-from core.models import Tag, Ingredient
+from core.models import Tag, Ingredient, Recipe
 
 User = get_user_model()
 
@@ -62,3 +62,13 @@ class ModelTests(TestCase):
         Ingredient.objects.create(name='salt', creator=create_sample_user())
         with self.assertRaises(IntegrityError):
             Ingredient.objects.create(name='Salt', creator=create_sample_user())
+
+    def test_recipe_str(self):
+        """test the recipe model str representation"""
+        recipe = Recipe.objects.create(
+            creator=create_sample_user(),
+            title='Steak and mushroom sauce',
+            time_minutes=5,
+            price=5.00
+        )
+        self.assertEqual(str(recipe), recipe.title)

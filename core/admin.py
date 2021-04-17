@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
 
-from .models import User, Tag, Ingredient
+from .models import User, Tag, Ingredient, Recipe
 
 
 @admin.register(User)
@@ -35,3 +35,8 @@ class TagModelAdmin(admin.ModelAdmin):
     list_display = 'name', 'creator'
     search_fields = 'name', 'creator__email', 'creator__name'
     autocomplete_fields = 'creator',
+
+
+@admin.register(Recipe)
+class RecipeModelAdmin(admin.ModelAdmin):
+    pass

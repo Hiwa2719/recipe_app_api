@@ -69,3 +69,15 @@ class Tag(TagIngredient):
 class Ingredient(TagIngredient):
     pass
 
+
+class Recipe(models.Model):
+    creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    title = models.CharField(max_length=256)
+    time_minutes = models.IntegerField()
+    price = models.DecimalField(max_digits=4, decimal_places=2)
+    link = models.CharField(max_length=256, blank=True)
+    ingredient = models.ManyToManyField('Ingredient')
+    tags = models.ManyToManyField('Tag')
+
+    def __str__(self):
+        return self.title
