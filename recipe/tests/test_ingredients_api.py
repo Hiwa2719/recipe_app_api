@@ -37,3 +37,10 @@ class PrivateIngredientApiTests(APITestCase):
         self.assertEqual(ingredients.count(), 1)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['name'], 'salt')
+
+    def test_creating_ingredient(self):
+        """testing creating ingredients"""
+        response = self.client.post(ingredient_url, {'name': 'vinegar'})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        ingredient = Ingredient.objects.get(name='vinegar')
+        self.assertEqual(ingredient.creator, self.user2)

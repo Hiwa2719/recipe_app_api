@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from django.db.utils import IntegrityError
 
 from core.models import Tag, Ingredient
 
@@ -43,6 +44,12 @@ class ModelTests(TestCase):
         self.assertEqual(str(tag), 'pizza')
         self.assertEqual(tag.creator, user)
 
+    def test_creating_repetitive_tag(self):
+        """models mustn't accept repetitive tag names"""
+        Tag.objects.create(name='lake', creator=create_sample_user())
+        with self.assertRaises(IntegrityError):
+            Tag.objects.create(name='lake', creator=create_sample_user(email='asdf@gmail.com'))
+
     def test_ingredient_str(self):
         """testing Ingredient model str"""
         ingredient = Ingredient.objects.create(
@@ -50,3 +57,8 @@ class ModelTests(TestCase):
             creator=create_sample_user()
         )
         self.assertEqual(str(ingredient), 'salt')
+
+    def test_creating_repetitive_Ingredient(self):
+        Ingredient.objects.create(name='salt', creator=create_sample_user())
+        with self.assertRaises(IntegrityError):
+            Ingredient.objects.create(name='Salt', creator=create_sample_user())

@@ -9,6 +9,8 @@ class TagSerializer(serializers.ModelSerializer):
         fields = 'id', 'name'
         read_only_fields = 'id',
 
+    # def create(self, validated_data):
+
 
 class IngredientSerializer(serializers.ModelSerializer):
     class Meta:
