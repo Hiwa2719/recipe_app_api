@@ -1,12 +1,17 @@
 from rest_framework import serializers, viewsets
 
-viewsets.GenericViewSet
-
-from core.models import Tag
+from core.models import Tag, Ingredient
 
 
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
-        fields = '__all__'
-        read_only_fields = 'id', 'creator'
+        fields = 'id', 'name'
+        read_only_fields = 'id',
+
+
+class IngredientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ingredient
+        fields = 'id', 'name'
+        read_only_fields = 'id',

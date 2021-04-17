@@ -47,9 +47,21 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.is_superuser
 
 
-class Tag(models.Model):
+class TagIngredient(models.Model):
     name = models.CharField(max_length=256)
     creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        abstract = True
+
+
+class Tag(TagIngredient):
+    pass
+
+
+class Ingredient(TagIngredient):
+    pass
+

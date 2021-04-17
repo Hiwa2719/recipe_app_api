@@ -33,13 +33,15 @@ class TestTagApiAuthenticatedUser(APITestCase):
         tags = Tag.objects.filter(creator=self.user)
         serializer = TagSerializer(tags, many=True)
         self.assertEqual(response.data, serializer.data)
-        self.assertEqual(response.data[0]['creator'], self.user.id)
+        tag = Tag.objects.get(id=response.data[0]['id'])
+        self.assertEqual(tag.creator, self.user)
 
     def test_creating_new_tag(self):
         """tag creation test"""
         response = self.client.post(tag_url, {'name': 'kalana'})
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data.get('creator'), self.user.id)
+        tag = Tag.objects.get(id=response.data.get('id'))
+        self.assertEqual(tag.creator, self.user)
         self.assertEqual(response.data.get('name'), 'kalana')
 
         tag_exists = Tag.objects.filter(name='kalana', creator=self.user).exists()
