@@ -1,6 +1,6 @@
 from rest_framework import permissions, authentication, viewsets, mixins
 
-from .serializers import TagSerializer, IngredientSerializer, RecipeSerializer
+from .serializers import TagSerializer, IngredientSerializer, RecipeSerializer, RecipeDetailSerializer
 from core.models import Tag, Ingredient, Recipe
 
 
@@ -37,3 +37,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(creator=self.request.user)
+
+    def get_serializer_class(self):
+        """return appropriate serializer"""
+        if self.action == 'retrieve':
+            return RecipeDetailSerializer
+        return self.serializer_class

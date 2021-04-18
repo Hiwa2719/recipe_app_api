@@ -18,10 +18,15 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
-    # ingredients = serializers.PrimaryKeyRelatedField(many=True, queryset=Ingredient.objects.all())
-    # tags = serializers.PrimaryKeyRelatedField(many=True, queryset=Tag.objects.all())
+    ingredients = serializers.PrimaryKeyRelatedField(many=True, queryset=Ingredient.objects.all())
+    tags = serializers.PrimaryKeyRelatedField(many=True, queryset=Tag.objects.all())
 
     class Meta:
         model = Recipe
         exclude = 'creator',
         read_only_fields = 'id',
+
+
+class RecipeDetailSerializer(RecipeSerializer):
+    tags = TagSerializer(many=True, read_only=True)
+    ingredients = IngredientSerializer(many=True, read_only=True)
