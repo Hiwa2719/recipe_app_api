@@ -49,4 +49,5 @@ class PrivateRecipeApiTest(APITestCase):
         self.assertEqual(len(response.data), 2)
 
 asdf
+hello world
 asdf
