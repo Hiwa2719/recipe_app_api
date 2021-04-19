@@ -1,3 +1,5 @@
+import os
+import uuid
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, UserManager as BaseManager
 from django.db import models
@@ -70,6 +72,14 @@ class Ingredient(TagIngredient):
     pass
 
 
+def recipe_image_location(instance, filename):
+    """Generate new file path for recipe image"""
+    extension = filename.rsplit('.', 1)[1]
+    file_name = f'{uuid.uuid4()}.{extension}'
+
+    return os.path.join('uploads', 'recipe', file_name)
+
+
 class Recipe(models.Model):
     creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     title = models.CharField(max_length=256)
@@ -78,6 +88,7 @@ class Recipe(models.Model):
     link = models.CharField(max_length=256, blank=True)
     ingredients = models.ManyToManyField('Ingredient')
     tags = models.ManyToManyField('Tag')
+    image = models.ImageField(upload_to=recipe_image_location, blank=True, null=True)
 
     def __str__(self):
         return self.title
