@@ -14,7 +14,11 @@ class BaseRecipeAttrViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, view
 
     def get_queryset(self):
         """only objects created by user should be returned"""
-        return self.queryset.filter(creator=self.request.user).order_by('-name')
+        assigned_only = int(self.request.query_params.get('assigned_only', 0))
+        queryset = super().get_queryset()
+        if assigned_only:
+            queryset = queryset.filter(recipe__isnull=False).distinct()
+        return queryset.filter(creator=self.request.user).order_by('-name')
 
     def perform_create(self, serializer):
         serializer.save(creator=self.request.user)
