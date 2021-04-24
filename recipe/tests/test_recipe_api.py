@@ -1,14 +1,20 @@
-from decimal import Decimal
+import os
+import tempfile
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.test import APITestCase
+from PIL import Image
 
 from core.models import Recipe, Tag, Ingredient
 from recipe.serializers import RecipeSerializer, RecipeDetailSerializer
 
 User = get_user_model()
 RECIPE_URL = reverse('recipe:recipes-list')
+
+
+def image_upload_url(recipe_id):
+    return reverse('recipe:recipes-upload-image', args=[recipe_id])
 
 
 def sample_tag(creator, name='Crap tag'):
@@ -156,3 +162,34 @@ class PrivateRecipeApiTest(APITestCase):
         tags = recipe.tags.all()
         self.assertEqual(tags.count(), 0)
 
+
+class RecipeImageUploadTests(APITestCase):
+    def setUp(self) -> None:
+        self.user = User.objects.create_user(
+            email='hiwa@gmail.com',
+            password='hiwa_asdf'
+        )
+        self.client.force_authenticate(self.user)
+        self.recipe = sample_recipe(self.user)
+
+    def tearDown(self) -> None:
+        self.recipe.image.delete()
+
+    def test_upload_image_to_recipe(self):
+        """testing upload image to recipe"""
+        url = image_upload_url(self.recipe.id)
+        with tempfile.NamedTemporaryFile(suffix='.jpg') as ntf:
+            image = Image.new('RGB', (10, 10))
+            image.save(ntf, format='JPEG')
+            ntf.seek(0)
+            response = self.client.post(url, {'image': ntf}, format='multipart')
+        self.recipe.refresh_from_db()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('image', response.data)
+        self.assertTrue(os.path.exists(self.recipe.image.path))
+
+    def test_upload_image_bad_request(self):
+        """test uploading an invalid image"""
+        url = image_upload_url(self.recipe.id)
+        response = self.client.post(url, {'image': 'notimage'}, format='multipart')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

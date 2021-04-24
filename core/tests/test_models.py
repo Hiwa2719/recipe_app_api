@@ -1,3 +1,5 @@
+import os
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.db.utils import IntegrityError
@@ -80,6 +82,5 @@ class ModelTests(TestCase):
         uuid = 'test-uuid'
         mock_uuid.return_value = uuid
         file_path = recipe_image_location(None, 'myimage.jpg')
-
-        exp_path = f'uploads/recipe/{uuid}.jpg'
-        # self.assertEqual(file_path, exp_path)
+        exp_path = os.path.join('uploads', 'recipe', f'{uuid}.jpg')
+        self.assertEqual(file_path, exp_path)
